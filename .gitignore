@@ -5,6 +5,12 @@
 # Logs
 *.log
 
+__pycache__/
+*.pyc
+data/
+.databrickscfg
+.pytest_cache/
+
 # Byte-compiled / optimized / DLL files
 *.py[codz]
 *$py.class
@@ -157,6 +163,7 @@ activemq-data/
 .env
 .envrc
 .venv
+.venv-test/
 env/
 venv/
 ENV/
