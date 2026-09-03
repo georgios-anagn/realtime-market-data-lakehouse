@@ -8,7 +8,7 @@ def clean_trades(bronze_df: DataFrame) -> DataFrame:
         .withColumn("event_time", (F.col("t") / 1000).cast("timestamp"))
         .withColumn("trade_date", F.to_date("event_time"))
         .withColumn(
-            "trade_id",
+            "trade_fingerprint",
             F.sha2(
                 F.concat_ws(
                     "|",
@@ -19,14 +19,19 @@ def clean_trades(bronze_df: DataFrame) -> DataFrame:
                 ),
                 256,
             ),
-        )
+        )        
         .select(
             F.col("s").alias("symbol"),
             F.col("p").alias("price"),
             F.col("v").alias("volume"),
             "event_time",
             "trade_date",
-            "trade_id",
+            "trade_fingerprint",
         )
-        .dropDuplicates(["trade_id"])
+        # .dropDuplicates(["trade_id"])
     )
+
+"""
+    Removed the drop duplicate trade_id method due to removed real trades. The trade_fingerprint does not protect in case Finnhub sends duplicate data (due to no trade ID in the source data). 
+    A deterministic SHA-256 fingerprint is retained for analytical comparison, while Auto Loader and Structured Streaming checkpoints provide ingestion/processing state.
+"""

@@ -16,7 +16,7 @@ BRONZE_TABLE = f"{CATALOG}.bronze.trades_raw"
 trades_schema = "s STRING, p DOUBLE, v DOUBLE, t LONG, c ARRAY<STRING>"
 
 raw_stream = (
-    spark.readStream # type: ignore
+    spark.readStream 
     .format("cloudFiles")
     .option("cloudFiles.format", "json")
     .option("cloudFiles.schemaLocation", CHECKPOINT_PATH + "/schema")

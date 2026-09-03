@@ -5,10 +5,10 @@
 # COMMAND ----------
 import sys, os
 sys.path.append(os.path.abspath("../src"))
-from delta.tables import DeltaTable # type: ignore
+from delta.tables import DeltaTable 
 from pyspark.sql import functions as F
 
-from transforms.silver_transforms import clean_trades # type: ignore
+from transforms.silver_transforms import clean_trades 
 
 CATALOG = "market_pipeline"
 BRONZE_TABLE = f"{CATALOG}.bronze.trades_raw"
@@ -16,27 +16,27 @@ SILVER_TABLE = f"{CATALOG}.silver.trades"
 CHECKPOINT_PATH = f"/Volumes/{CATALOG}/landing/checkpoints/silver_trades"
 
 # COMMAND ----------
-if not spark.catalog.tableExists(SILVER_TABLE): # type: ignore
+if not spark.catalog.tableExists(SILVER_TABLE): 
     spark.sql(f""" 
         CREATE TABLE {SILVER_TABLE} (
             symbol STRING, price DOUBLE, volume DOUBLE,
-            event_time TIMESTAMP, trade_date DATE, trade_id STRING
+            event_time TIMESTAMP, trade_date DATE, trade_fingerprint STRING
         ) USING DELTA PARTITIONED BY (trade_date)
     """) 
 
 
 def upsert_batch(batch_df, batch_id):
     clean_df = clean_trades(batch_df)
-    target = DeltaTable.forName(spark, SILVER_TABLE) # type: ignore
+    target = DeltaTable.forName(spark, SILVER_TABLE) 
     (
         target.alias("t")
-        .merge(clean_df.alias("s"), "t.trade_id = s.trade_id")
+        .merge(clean_df.alias("s"), "t.trade_fingerprint = s.trade_fingerprint")
         .whenNotMatchedInsertAll()
         .execute()
     )
 
 
-bronze_stream = spark.readStream.table(BRONZE_TABLE) # type: ignore
+bronze_stream = spark.readStream.table(BRONZE_TABLE) 
 
 query = (
     bronze_stream.writeStream
@@ -49,7 +49,7 @@ query.awaitTermination() # wait for the data load to finish. Otherwise, running 
 
 # COMMAND ----------
 # Company profile dimension: SCD Type 1 upsert (overwrite on change, keyed by symbol)
-profiles_bronze = spark.table(f"{CATALOG}.bronze.company_profiles_raw") # type: ignore
+profiles_bronze = spark.table(f"{CATALOG}.bronze.company_profiles_raw") 
 profiles_clean = profiles_bronze.select(
     F.col("symbol"),
     F.col("name"),
@@ -58,10 +58,10 @@ profiles_clean = profiles_bronze.select(
     F.col("currency"),
 )
 
-if not spark.catalog.tableExists(f"{CATALOG}.silver.company_profiles"): # type: ignore
+if not spark.catalog.tableExists(f"{CATALOG}.silver.company_profiles"): 
     profiles_clean.write.saveAsTable(f"{CATALOG}.silver.company_profiles")
 else:
-    target = DeltaTable.forName(spark, f"{CATALOG}.silver.company_profiles") # type: ignore
+    target = DeltaTable.forName(spark, f"{CATALOG}.silver.company_profiles") 
     (
         target.alias("t")
         .merge(profiles_clean.alias("s"), "t.symbol = s.symbol")
