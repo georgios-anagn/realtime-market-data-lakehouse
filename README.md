@@ -1,4 +1,4 @@
-# Real-Time Market Data Lakehouse
+# Real-Time Stock Market Data Lakehouse
 
 A streaming data platform that ingests live US stock trades from Finnhub, lands them in a Databricks Lakehouse, and processes them through a medallion architecture (Bronze → Silver → Gold) into OHLC candlestick bars, moving averages, and daily summaries - visualized in a live-refreshing Databricks SQL dashboard.
 
@@ -64,7 +64,7 @@ tests/                Unit tests for src/transforms, run locally and in CI
 ## Design decisions worth knowing about
 
 - **Ingestion runs outside Databricks entirely.** Free Edition restricts notebook/job outbound network access to a trusted domain allowlist - calling an external API directly from a notebook isn't reliably possible. Rather than fight that, ingestion became a standalone process, which mirrors how many real systems are built for security/governance reasons anyway.
-- **`tradefingerprint`:** Finnhub's trade payload does not provide an exchange-level trade identifier. Therefore, the Silver layer does not deduplicate based on symbol, timestamp, price, and volume, since multiple legitimate trades may share these attributes. A deterministic SHA-256 fingerprint is retained for analytical comparison, while Auto Loader and Structured Streaming checkpoints provide ingestion/processing state.
+- **`trade_fingerprint`:** Finnhub's trade payload does not provide an exchange-level trade identifier. Therefore, the Silver layer does not deduplicate based on symbol, timestamp, price, and volume, since multiple legitimate trades may share these attributes. A deterministic SHA-256 fingerprint is retained for analytical comparison, while Auto Loader and Structured Streaming checkpoints provide ingestion/processing state.
 - **`Trigger.AvailableNow()` instead of a continuous stream.** Serverless compute doesn't support time-based streaming triggers, so each pipeline run processes everything that's landed since the last checkpoint on a schedule, rather than running continuously. This is also a legitimate cost-saving pattern outside of that constraint.
 
 ## Known limitations
@@ -75,13 +75,13 @@ tests/                Unit tests for src/transforms, run locally and in CI
 
 ## Screenshots
 
-**1. Pipeline run (Databricks Workflows)**
+***1. Pipeline run (Databricks Workflows)***
 ![Pipeline run](docs/screenshots/pipeline-run.png)
 
-**2. Catalog structure (bronze/silver/gold in Unity Catalog)**
+***2. Catalog structure (bronze/silver/gold in Unity Catalog)***
 ![Catalog structure](docs/screenshots/catalog-structure.png)
 
-**3. Dashboard examples**
+***3. Dashboard examples***
 ![Dashboard](docs/screenshots/dashboard.png)
 
 ## Running it locally
