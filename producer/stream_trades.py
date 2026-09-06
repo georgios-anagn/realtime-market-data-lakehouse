@@ -14,7 +14,7 @@ from uploader import upload_file
 load_dotenv()
 
 FINNHUB_TOKEN = os.environ["FINNHUB_API_KEY"]
-SYMBOLS = os.environ.get("SYMBOLS", "VOO,VT,AAPL,MSFT,GOOGL,AMZN,NVDA,TSLA,META").split(",")
+SYMBOLS = os.environ.get("SYMBOLS", "AAPL,MSFT,GOOGL,AMZN,NVDA,TSLA,META").split(",")
 FLUSH_INTERVAL_SECONDS = int(os.environ.get("FLUSH_INTERVAL_SECONDS", "60"))
 VOLUME_PATH = os.environ["DATABRICKS_VOLUME_PATH"]
 LOCAL_LANDING_DIR = Path("data/landing")
