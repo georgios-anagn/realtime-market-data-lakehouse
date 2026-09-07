@@ -32,6 +32,7 @@ def on_message(ws, message):
 
 def on_error(ws, error):
     print(f"[ws error] {error}")
+    print(f"[ws error] type={type(error).__name__}, repr={error!r}")
 
 
 def on_close(ws, code, msg):
